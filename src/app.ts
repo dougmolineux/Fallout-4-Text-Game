@@ -3,17 +3,41 @@ import * as _ from 'lodash';
 
 const locations = require('../data/locations').locations;
 
-interface Room {
-  x: number;
-  y: number;
+interface Weapon {
   name: string;
+  damage: number;
 }
 
-const position = [ 25, 25 ];
-const weapon = "10mm Pistol";
-const location = "Wasteland";
-const hp = 10;
-const maxHP = 10;
+interface Mob {
+  name: string;
+  hp: number;
+  weapon: Weapon;
+}
+
+interface Room {
+  name: string;  
+  x: number;
+  y: number;
+  description?: string;
+  mobs?: Mob[];
+}
+
+interface Player {
+  position: [ number, number ];
+  weapon: Weapon;
+  hp: number;
+  maxHP: number,
+}
+
+const player: Player = {
+  position: [ 25, 25 ],
+  weapon: {
+    name: "10mm Pistol",
+    damage: 1
+  },
+  hp: 10,
+  maxHP: 10 
+};
 const world: Room[] = [];
 const worldSize = 50; // width and length of world
 
@@ -40,11 +64,14 @@ const populateWorld = () => {
 populateWorld();
 
 const generatePromptDisplay = () => {
-  return getRoomName().name+' '+position+' '+' <'+hp+'/'+maxHP+'HP '+weapon+' '+location+'>:';
+  return `<${player.hp}/${player.maxHP}HP ${player.weapon.name} ${getRoomName().name}>:`;
 }
 
 const getRoomName = () => {
-  return _.find(world, { x: position[0], y: position[1] }) || { name: "No Room Name" };
+  return _.find(world, { 
+    x: player.position[0], 
+    y: player.position[1] 
+  }) || { name: "No Room Name" };
 }
 
 const question: Array<inquirer.Question> = [{
@@ -55,10 +82,10 @@ const question: Array<inquirer.Question> = [{
 }]; 
 
 const handleInput = (answer: any) => {
-  if(answer.direction === "n") position[0]++;
-  if(answer.direction === "s") position[0]--;
-  if(answer.direction === "e") position[1]++;
-  if(answer.direction === "w") position[1]--;
+  if(answer.direction === "n") player.position[0]++;
+  else if(answer.direction === "s") player.position[0]--;
+  else if(answer.direction === "e") player.position[1]++;
+  else if(answer.direction === "w") player.position[1]--;
   question[0].message = generatePromptDisplay();
   console.log(answer);  
   takeInput();
